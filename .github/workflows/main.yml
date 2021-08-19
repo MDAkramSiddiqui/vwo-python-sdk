@@ -38,20 +38,4 @@ jobs:
         coverage run --source=vwo setup.py test 
         coveralls --output=coverage.json
   
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        flag-name: ${{matrix.os}}-pip-${{ matrix.node }}
-        path-to-lcov: coverage.json
-        parallel: true
 
-  finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls Finished
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.github_token }}
-        parallel-finished: true
