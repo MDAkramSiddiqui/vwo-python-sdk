@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, github-action ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    if: "!contains(toJSON(github.event.commits.*.message), '[skip-ci]')"
+    name: Test on node ${{ matrix.python-version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        python-version: [2.7, 3.4.5, 3.4.8, 3.5.5, 3.5.10, 3.6.0, 3.6.10, 3.7.0, 3.7.5, 3.8.0, 3.8.5, 3.9.0]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Restore packages
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt, **/requirements-travis.txt') }}
+
+    - name: Install packages
+      run: |
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements-travis.txt ]; then pip install -r requirements-travis.txt; fi
+        coverage run --source=vwo setup.py test
+  
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        flag-name: ${{matrix.os}}-pip-${{ matrix.node }}
+        parallel: true
+
+  finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
