@@ -40,19 +40,8 @@ jobs:
     - name: Run tests
       run: coverage run --source=vwo setup.py test 
 
-    - name: Coveralls
-      uses: AndreMiras/coveralls-python-action@develop
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        flag-name: ${{matrix.os}}-pip-${{ matrix.node }}
-        parallel: true
 
-  finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls Finished
-      uses: AndreMiras/coveralls-python-action@develop
+    - name: "Upload coverage to Codecov"
+      uses: codecov/codecov-action@v1
       with:
-        github-token: ${{ secrets.github_token }}
-        parallel-finished: true
+        fail_ci_if_error: true
