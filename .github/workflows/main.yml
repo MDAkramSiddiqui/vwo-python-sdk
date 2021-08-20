@@ -36,6 +36,23 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements-travis.txt ]; then pip install -r requirements-travis.txt; fi
         coverage run --source=vwo setup.py test 
-        coveralls --output=coverage.json
-  
 
+    - name: Run tests
+      run: coverage run --source=vwo setup.py test 
+
+    - name: Coveralls
+      uses: AndreMiras/coveralls-python-action@develop
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        flag-name: ${{matrix.os}}-pip-${{ matrix.node }}
+        parallel: true
+
+  finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: AndreMiras/coveralls-python-action@develop
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
